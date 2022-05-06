@@ -27,7 +27,6 @@
   "dependencies": {
     "lzma-native": "^8.0.6",
     "node-stream-zip": "^1.13.4",
-    "rimraf": "^3.0.2",
-    "xz": "^2.0.2"
+    "rimraf": "^3.0.2"
   }
 }
