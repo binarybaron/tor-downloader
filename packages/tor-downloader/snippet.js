@@ -6,7 +6,7 @@ const {
     TorBrowserRepository,
     TorBrowserRelease,
     TorBrowserBranch,
-} = require("./dist");
+} = require("./src/index");
 
 (async () => {
     // Directory where Tor will be retrieved

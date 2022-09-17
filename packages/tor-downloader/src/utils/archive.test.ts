@@ -1,6 +1,6 @@
 import { createReadStream, createWriteStream, ReadStream, WriteStream } from "fs";
 import { async as StreamZip } from "node-stream-zip";
-import { Decompressor } from "xz";
+import { Decompressor, JSLzmaStream } from "lzma-native";
 import { decompressXz, unzip } from "./archive";
 
 jest.mock("node-stream-zip");
@@ -10,8 +10,8 @@ jest.mock("fs");
 const mockCreateReadStream = createReadStream as jest.MockedFunction<typeof createReadStream>;
 const mockCreateWriteStream = createWriteStream as jest.MockedFunction<typeof createWriteStream>;
 
-jest.mock("xz");
-const mockDecompressor = Decompressor as jest.MockedClass<typeof Decompressor>;
+jest.mock("lzma-native");
+const mockDecompressor = Decompressor as jest.MockedFunction<typeof Decompressor>;
 
 describe("archive", () => {
     describe("unzip", () => {
@@ -54,7 +54,7 @@ describe("archive", () => {
                 }),
             };
         };
-        const getMockDecompressor = (error?: Error): Partial<Decompressor> => {
+        const getMockDecompressor = (error?: Error): Partial<JSLzmaStream> => {
             return {
                 on: jest.fn().mockImplementation((event, listener) => {
                     if (error && event === "error") {
@@ -74,7 +74,7 @@ describe("archive", () => {
             const mockDecompress = getMockDecompressor();
             mockCreateReadStream.mockReturnValue(mockReadStream as ReadStream);
             mockCreateWriteStream.mockReturnValue(mockWriteStream as WriteStream);
-            mockDecompressor.mockReturnValue(mockDecompress as Decompressor);
+            mockDecompressor.mockReturnValue(mockDecompress as JSLzmaStream);
 
             await decompressXz(filePath, decompressedFilePath);
 
@@ -101,7 +101,7 @@ describe("archive", () => {
             let mockDecompress = getMockDecompressor();
             mockCreateReadStream.mockReturnValue(mockReadStream as ReadStream);
             mockCreateWriteStream.mockReturnValue(mockWriteStream as WriteStream);
-            mockDecompressor.mockReturnValue(mockDecompress as Decompressor);
+            mockDecompressor.mockReturnValue(mockDecompress as JSLzmaStream);
 
             const decompress = () => decompressXz(filePath, decompressedFilePath);
 
@@ -110,13 +110,13 @@ describe("archive", () => {
             mockReadStream = getMockReadStream();
             mockDecompress = getMockDecompressor(error);
             mockCreateReadStream.mockReturnValue(mockReadStream as ReadStream);
-            mockDecompressor.mockReturnValue(mockDecompress as Decompressor);
+            mockDecompressor.mockReturnValue(mockDecompress as JSLzmaStream);
 
             await expect(decompress).rejects.toThrow(error);
 
             mockDecompress = getMockDecompressor();
             mockWriteStream = getMockWriteStream(error);
-            mockDecompressor.mockReturnValue(mockDecompress as Decompressor);
+            mockDecompressor.mockReturnValue(mockDecompress as JSLzmaStream);
             mockCreateWriteStream.mockReturnValue(mockWriteStream as WriteStream);
 
             await expect(decompress).rejects.toThrow(error);
